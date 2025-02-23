@@ -1,7 +1,9 @@
+[![PyPI version][pypi-badge]][pypi-link]
 [![Python versions][python-badge]][python-link]
 [![Build Status][ci-badge]][ci-link]
 [![Coverage Status][cov-badge]][cov-link]
 [![License][license-badge]][license-link]
+[![DOI][doi-badge]][doi-link]
 
 # what is packmm
 
@@ -227,6 +229,8 @@ after optimisation
 
 
 
+[doi-link]: https://zenodo.org/badge/latestdoi/937083576
+[doi-badge]: https://zenodo.org/badge/937083576.svg
 [python-badge]: https://img.shields.io/pypi/pyversions/pack-mm.svg
 [python-link]: https://pypi.org/project/pack-mm/
 [ci-badge]: https://github.com/ddmms/pack-mm/actions/workflows/build.yml/badge.svg?branch=main
@@ -235,3 +239,5 @@ after optimisation
 [cov-link]: https://coveralls.io/github/ddmms/pack-mm?branch=main
 [license-badge]: https://img.shields.io/badge/License-MIT-yellow.svg
 [license-link]: https://opensource.org/license/MIT
+[pypi-badge]: https://badge.fury.io/py/pack-mm.svg
+[pypi-link]: https://pypi.org/project/pack-mm/
