@@ -219,6 +219,13 @@ after optimisation
 
 ```
 
+## License
+
+[MIT License](LICENSE)
+
+## Funding
+
+
 
 [python-badge]: https://img.shields.io/pypi/pyversions/pack-mm.svg
 [python-link]: https://pypi.org/project/pack-mm/
