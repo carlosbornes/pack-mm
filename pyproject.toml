@@ -1,6 +1,6 @@
 [project]
 name = "pack-mm"
-version = "0.0.23"
+version = "0.0.24"
 description = "packing materials and molecules in boxes using for machine learnt interatomic potentials"
 authors = [
     { name = "Alin M. Elena" },
@@ -56,6 +56,8 @@ docs = [
     "sphinx-autodoc-typehints<3.0.0,>=2.5.0",
     "sphinx-collapse>=0.1.3",
     "sphinx-copybutton<1.0.0,>=0.5.2",
+    "data-tutorials",
+    "weas-widget",
 ]
 
 pre-commit = [
