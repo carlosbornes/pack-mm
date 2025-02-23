@@ -29,6 +29,11 @@ or install the latest
 
 ```
 
+## Jupyter notebook examples
+
+
+- [Basics](docs/source/tutorials/basics.ipynb) [![badge](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ddmms/pack-mm/blob/main/docs/source/tutorials/basic.ipynb)
+
 ## CLI examples
 
 

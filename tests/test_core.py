@@ -236,7 +236,7 @@ def test_optimize_geometry(tmp_path):
     molecule.set_pbc([True, True, True])
     structure_file = tmp_path / "water.cif"
     write(structure_file, molecule)
-    optimized_energy = optimize_geometry(
+    optimized_energy, _ = optimize_geometry(
         str(structure_file),
         device="cpu",
         arch="mace_mp",
@@ -256,7 +256,7 @@ def test_pack_molecules(tmp_path):
     system_file = tmp_path / "system.cif"
     write(system_file, system)
 
-    e = pack_molecules(
+    e, _ = pack_molecules(
         system=str(system_file),
         molecule="H2O",
         nmols=2,
@@ -279,6 +279,33 @@ def test_pack_molecules(tmp_path):
     assert e == pytest.approx(-29.21589570470306, abs=err)
 
 
+def test_pack_molecules_atoms(tmp_path):
+    """Test pack molecule."""
+    system = Atoms(
+        "Ca", positions=[(5.0, 5.0, 5.0)], cell=[10, 10, 10], pbc=[True, True, True]
+    )
+
+    e, _ = pack_molecules(
+        system=system,
+        molecule="H2O",
+        nmols=2,
+        arch="mace_mp",
+        model="small-0b2",
+        device="cpu",
+        where="sphere",
+        center=(5.0, 5.0, 5.0),
+        radius=5.0,
+        seed=2042,
+        temperature=300,
+        ntries=10,
+        geometry=False,
+        fmax=0.1,
+        out_path=tmp_path,
+    )
+
+    assert e == pytest.approx(-29.21589570470306, abs=err)
+
+
 def test_pack_molecules_2(tmp_path, capsys):
     """Test pack molecule."""
     system = Atoms(
@@ -287,7 +314,7 @@ def test_pack_molecules_2(tmp_path, capsys):
     system_file = tmp_path / "system.cif"
     write(system_file, system)
 
-    e = pack_molecules(
+    e, _ = pack_molecules(
         system=str(system_file),
         molecule="H2O",
         nmols=3,
@@ -307,7 +334,7 @@ def test_pack_molecules_2(tmp_path, capsys):
     captured = capsys.readouterr()
 
     assert "Failed to insert particle 3 after 2 tries" in captured.out
-    assert e == pytest.approx(-47.19506254437384, abs=err)
+    assert e == pytest.approx(-47.194755808249454, abs=err)
 
 
 def test_save_the_day(tmp_path):

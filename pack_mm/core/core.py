@@ -186,7 +186,7 @@ def set_defaults(
 
 
 def pack_molecules(
-    system: str = None,
+    system: str | Atoms = None,
     molecule: str = "H2O",
     nmols: int = -1,
     arch: str = "cpu",
@@ -214,13 +214,13 @@ def pack_molecules(
     md_steps: int = 10,
     md_timestep: float = 1.0,
     md_temperature: float = 100.0,
-) -> float:
+) -> tuple(float, Atoms):
     """
     Pack molecules into a system based on the specified parameters.
 
     Parameters
     ----------
-        system (str): Path to the system file or name of the system.
+        system (str|Atoms): Path to the system file or name of the system.
         molecule (str): Path to the molecule file or name of the molecule.
         nmols (int): Number of molecules to insert.
         arch (str): Architecture for the calculator.
@@ -246,6 +246,11 @@ def pack_molecules(
         insert_strategy (str): Insert strategy, "random" or "md"
         relax_strategy (str): Relax strategy, "geometry_optimisation" or "md"
 
+    Returns
+    -------
+        tuple: A tuple energy and Atoms object containing
+               original system and added molecules..
+
     """
     kbt = temperature * kB
     validate_value("temperature", temperature)
@@ -270,6 +275,9 @@ def pack_molecules(
     if system is None:
         sys = Atoms(cell=[cell_a, cell_b, cell_c], pbc=[True, True, True])
         sysname = ""
+    elif isinstance(system, Atoms):
+        sys = system.copy()
+        sysname = sys.get_chemical_formula()
     else:
         sys = read(system)
         sysname = Path(system).stem + "+"
@@ -306,6 +314,20 @@ def pack_molecules(
                     tsys, md_temperature, md_steps, md_timestep, arch, model, device
                 )
 
+            if every > 0 and _itry / every == 0:
+                tsys = save_the_day(
+                    struct_path=tsys,
+                    device=device,
+                    arch=arch,
+                    model=model,
+                    fmax=fmax,
+                    out_path=out_path,
+                    md_temperature=md_temperature,
+                    md_steps=md_steps,
+                    md_timestep=md_timestep,
+                    relax_strategy=relax_strategy,
+                )
+
             tsys.calc = calc
             en = tsys.get_potential_energy()
             de = en - e
@@ -317,20 +339,6 @@ def pack_molecules(
             if u <= acc:
                 accept = True
                 break
-            if every > 0 and _itry / every == 0:
-                csys = save_the_day(
-                    Path(out_path) / f"{sysname}{i}{Path(molecule).stem}.cif",
-                    device,
-                    arch,
-                    model,
-                    fmax,
-                    out_path,
-                    md_temperature,
-                    md_steps,
-                    md_timestep,
-                    relax_strategy,
-                )
-
         if accept:
             csys = tsys.copy()
             e = en
@@ -342,7 +350,7 @@ def pack_molecules(
             # once you hit here is bad, this can keep looping
             print(f"Failed to insert particle {i + 1} after {ntries} tries")
             csys = save_the_day(
-                Path(out_path) / f"{sysname}{i}{Path(molecule).stem}.cif",
+                csys,
                 device,
                 arch,
                 model,
@@ -358,7 +366,7 @@ def pack_molecules(
 
     # Perform final geometry optimization if requested
     if geometry:
-        energy_final = optimize_geometry(
+        energy_final, csys = optimize_geometry(
             Path(out_path) / f"{sysname}{nmols}{Path(molecule).stem}.cif",
             device,
             arch,
@@ -367,7 +375,7 @@ def pack_molecules(
             out_path,
             True,
         )
-    return energy_final
+    return (energy_final, csys)
 
 
 def load_molecule(molecule: str):
@@ -410,7 +418,7 @@ def rotate_molecule(mol):
 
 
 def save_the_day(
-    struct_path: str = "",
+    struct_path: str | Atoms,
     device: str = "",
     arch: str = "",
     model: str = "",
@@ -423,7 +431,7 @@ def save_the_day(
 ) -> Atoms:
     """Geometry optimisation or MD to get a better structure."""
     if relax_strategy == "geometry_optimisation":
-        _ = optimize_geometry(
+        _, a = optimize_geometry(
             struct_path,
             device,
             arch,
@@ -431,7 +439,7 @@ def save_the_day(
             fmax,
             out_path,
         )
-        return read(Path(out_path) / f"{Path(struct_path).stem}-opt.cif")
+        return a
     if relax_strategy == "md":
         return run_md_nve(
             struct_path, md_temperature, md_steps, md_timestep, arch, model, device
@@ -476,23 +484,34 @@ def run_md_nve(
 
 
 def optimize_geometry(
-    struct_path: str,
+    struct_path: str | Atoms,
     device: str,
     arch: str,
     model: str,
     fmax: float,
     out_path: str = ".",
     opt_cell: bool = False,
-) -> float:
+) -> tuple(float, Atoms):
     """Optimize the geometry of a structure."""
-    geo = GeomOpt(
-        struct_path=struct_path,
-        device=device,
-        arch=arch,
-        fmax=fmax,
-        calc_kwargs={"model_paths": model},
-        filter_kwargs={"hydrostatic_strain": opt_cell},
-    )
-    geo.run()
-    write(Path(out_path) / f"{Path(struct_path).stem}-opt.cif", geo.struct)
-    return geo.struct.get_potential_energy()
+    if isinstance(struct_path, Atoms):
+        geo = GeomOpt(
+            struct=struct_path,
+            device=device,
+            arch=arch,
+            fmax=fmax,
+            calc_kwargs={"model_paths": model},
+            filter_kwargs={"hydrostatic_strain": opt_cell},
+        )
+        geo.run()
+    else:
+        geo = GeomOpt(
+            struct_path=struct_path,
+            device=device,
+            arch=arch,
+            fmax=fmax,
+            calc_kwargs={"model_paths": model},
+            filter_kwargs={"hydrostatic_strain": opt_cell},
+        )
+        geo.run()
+        write(Path(out_path) / f"{Path(struct_path).stem}-opt.cif", geo.struct)
+    return (geo.struct.get_potential_energy(), geo.struct)

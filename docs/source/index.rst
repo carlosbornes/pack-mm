@@ -6,10 +6,8 @@
 pack-mm documentation
 =====================
 
-Examples
---------
+tutorials/index
 
-examples.rst
 
 
 .. toctree::

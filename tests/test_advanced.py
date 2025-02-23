@@ -6,7 +6,8 @@
 # ©alin m elena,
 from __future__ import annotations
 
-from ase.io import read
+from ase.build import bulk
+from ase.io import read, write
 import pytest
 from typer.testing import CliRunner
 
@@ -48,3 +49,37 @@ def test_packmm_hmc(tmp_path):
     assert (tmp_path / "2H2O-opt.cif").exists()
     f = read(tmp_path / "2H2O-opt.cif")
     assert f[0].position == pytest.approx([7.83120709, 6.21742874, 5.22597213], abs=err)
+
+
+def test_packmm_every(tmp_path):
+    """Check values."""
+    na = bulk("NaCl", "rocksalt", a=5.61, cubic=True)
+    write(tmp_path / "system.cif", na)
+    write("system.cif", na)
+
+    result = runner.invoke(
+        app,
+        [
+            "--system",
+            tmp_path / "system.cif",
+            "--molecule",
+            "H2",
+            "--every",
+            "1",
+            "--nmols",
+            "2",
+            "--model",
+            "small-0b2",
+            "--seed",
+            "2042",
+            "--out-path",
+            tmp_path,
+            "--no-geometry",
+        ],
+    )
+    assert result.exit_code == 0
+    assert (tmp_path / "system.cif").exists()
+    assert (tmp_path / "system+1H2.cif").exists()
+    assert (tmp_path / "system+2H2.cif").exists()
+    f = read(tmp_path / "system+2H2.cif")
+    assert f[0].position == pytest.approx([1.24701529, 0.024216, 0.11632905], abs=err)
