@@ -1,4 +1,8 @@
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     basic
+    surface
+    water
+    interstitials
+    mof

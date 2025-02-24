@@ -210,7 +210,7 @@ def pack_molecules(
     out_path: str = ".",
     every: int = -1,
     relax_strategy: str = "geometry_optimisation",
-    insert_strategy: str = "random",
+    insert_strategy: str = "mc",
     md_steps: int = 10,
     md_timestep: float = 1.0,
     md_temperature: float = 100.0,
@@ -277,7 +277,7 @@ def pack_molecules(
         sysname = ""
     elif isinstance(system, Atoms):
         sys = system.copy()
-        sysname = sys.get_chemical_formula()
+        sysname = sys.get_chemical_formula() + "+"
     else:
         sys = read(system)
         sysname = Path(system).stem + "+"
