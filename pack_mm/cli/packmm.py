@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from enum import Enum
 
-import typer
+from janus_core.cli.utils import yaml_converter_callback
+from typer import Exit, Option, Typer
+from typer_config import use_config
 
 from pack_mm.core.core import pack_molecules
 
@@ -41,98 +43,89 @@ class RelaxStrategy(str, Enum):
     MD = "md"
 
 
-app = typer.Typer(no_args_is_help=True)
+app = Typer(no_args_is_help=True)
 
 
 @app.command()
+@use_config(yaml_converter_callback)
 def packmm(
-    system: str | None = typer.Option(
+    system: str | None = Option(
         None,
         help="""The original box in which you want to add particles.
         If not provided, an empty box will be created.""",
     ),
-    molecule: str = typer.Option(
+    molecule: str = Option(
         "H2O",
         help="""Name of the molecule to be processed, ASE-recognizable or
         ASE-readable file.""",
     ),
-    nmols: int = typer.Option(-1, help="Target number of molecules to insert."),
-    ntries: int = typer.Option(
+    nmols: int = Option(-1, help="Target number of molecules to insert."),
+    ntries: int = Option(
         50, help="Maximum number of attempts to insert each molecule."
     ),
-    every: int = typer.Option(
+    every: int = Option(
         -1, help="Run MD-NVE or Geometry optimisation everyth insertion."
     ),
-    seed: int = typer.Option(2025, help="Random seed for reproducibility."),
-    md_steps: int = typer.Option(10, help="Number of steps to run MD."),
-    md_timestep: float = typer.Option(1.0, help="Timestep for MD integration, in fs."),
-    where: InsertionMethod = typer.Option(
+    seed: int = Option(2025, help="Random seed for reproducibility."),
+    md_steps: int = Option(10, help="Number of steps to run MD."),
+    md_timestep: float = Option(1.0, help="Timestep for MD integration, in fs."),
+    where: InsertionMethod = Option(
         InsertionMethod.ANYWHERE,
         help="""Where to insert the molecule. Choices: 'anywhere', 'sphere',
         'box', 'cylinderZ', 'cylinderY', 'cylinderX', 'ellipsoid'.""",
     ),
-    insert_strategy: InsertionStrategy = typer.Option(
+    insert_strategy: InsertionStrategy = Option(
         InsertionStrategy.MC,
         help="""How to insert a new molecule. Choices: 'mc', 'hmc',""",
     ),
-    relax_strategy: RelaxStrategy = typer.Option(
+    relax_strategy: RelaxStrategy = Option(
         RelaxStrategy.GEOMETRY_OPTIMISATION,
         help="""How to relax the system to get more favourable structures.
             Choices: 'geometry_optimisation', 'md',""",
     ),
-    centre: str | None = typer.Option(
+    centre: str | None = Option(
         None,
         help="""Centre of the insertion zone, coordinates in Å,
         e.g., '5.0, 5.0, 5.0'.""",
     ),
-    radius: float | None = typer.Option(
+    radius: float | None = Option(
         None,
         help="""Radius of the sphere or cylinder in Å,
         depending on the insertion volume.""",
     ),
-    height: float | None = typer.Option(None, help="Height of the cylinder in Å."),
-    a: float | None = typer.Option(
+    height: float | None = Option(None, help="Height of the cylinder in Å."),
+    a: float | None = Option(
         None,
         help="""Side of the box or semi-axis of the ellipsoid, in Å,
         depends on the insertion method.""",
     ),
-    b: float | None = typer.Option(
+    b: float | None = Option(
         None,
         help="""Side of the box or semi-axis of the ellipsoid, in Å,
         depends on the insertion method.""",
     ),
-    c: float | None = typer.Option(
+    c: float | None = Option(
         None,
         help="""Side of the box or semi-axis of the ellipsoid, in Å,
         depends on the insertion method.""",
     ),
-    device: str = typer.Option(
+    device: str = Option(
         "cpu", help="Device to run calculations on (e.g., 'cpu' or 'cuda')."
     ),
-    model: str = typer.Option("medium-omat-0", help="ML model to use."),
-    arch: str = typer.Option("mace_mp", help="MLIP architecture to use."),
-    temperature: float = typer.Option(
+    model: str = Option("medium-omat-0", help="ML model to use."),
+    arch: str = Option("mace_mp", help="MLIP architecture to use."),
+    temperature: float = Option(
         300.0, help="Temperature for the Monte Carlo acceptance rule."
     ),
-    md_temperature: float = typer.Option(
+    md_temperature: float = Option(
         100.0, help="Temperature for the Molecular dynamics relaxation."
     ),
-    cell_a: float = typer.Option(
-        20.0, help="Side of the empty box along the x-axis in Å."
-    ),
-    cell_b: float = typer.Option(
-        20.0, help="Side of the empty box along the y-axis in Å."
-    ),
-    cell_c: float = typer.Option(
-        20.0, help="Side of the empty box along the z-axis in Å."
-    ),
-    fmax: float = typer.Option(
-        0.1, help="force tollerance for optimisation if needed."
-    ),
-    geometry: bool = typer.Option(
-        True, help="Perform geometry optimization at the end."
-    ),
-    out_path: str = typer.Option(".", help="path to save various outputs."),
+    cell_a: float = Option(20.0, help="Side of the empty box along the x-axis in Å."),
+    cell_b: float = Option(20.0, help="Side of the empty box along the y-axis in Å."),
+    cell_c: float = Option(20.0, help="Side of the empty box along the z-axis in Å."),
+    fmax: float = Option(0.1, help="force tollerance for optimisation if needed."),
+    geometry: bool = Option(True, help="Perform geometry optimization at the end."),
+    out_path: str = Option(".", help="path to save various outputs."),
 ):
     """Pack molecules into a system based on the specified parameters."""
     print("Script called with following input")
@@ -166,7 +159,7 @@ def packmm(
     print(f"{md_temperature=}")
     if nmols == -1:
         print("nothing to do, no molecule to insert")
-        raise typer.Exit(0)
+        raise Exit(0)
 
     center = centre
     if centre:

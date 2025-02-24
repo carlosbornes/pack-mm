@@ -1,0 +1,8 @@
+where: sphere
+system: examples/data/UiO-66.cif
+molecule: H2O
+nmols: 10
+centre: 10,10,10
+radius: 5.0
+geometry: False
+model: small-0b2
