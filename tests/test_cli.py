@@ -21,6 +21,22 @@ def test_packmm_default_values():
     assert "nothing to do" in strip_ansi_codes(result.output)
 
 
+def test_packmm_config(tmp_path):
+    """Check config file."""
+    with open(tmp_path / "sphere.yml", "w", encoding="utf-8") as f:
+        conf = """nmols: 1
+molecule: CH4
+cell-a: 10.0
+cell-b: 10.0
+cell-c: 10.0
+where: sphere
+geometry: False
+"""
+        print(conf, file=f)
+    result = runner.invoke(app, ["--config", tmp_path / "sphere.yml"])
+    assert "nmols=1" in strip_ansi_codes(result.output)
+
+
 def test_packmm_custom_molecule():
     """Check molecule."""
     result = runner.invoke(app, ["--molecule", "CO2"])

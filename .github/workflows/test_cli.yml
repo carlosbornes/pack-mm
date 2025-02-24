@@ -48,3 +48,5 @@ jobs:
       run: uv run packmm --molecule H2O --nmols 33  --where anywhere  --cell-a 10.0 --cell-b 10.0 --cell-c 10.0  --model small-0b2
     - name: interstitials
       run: uv run packmm --system examples/data/Pd-super.cif --molecule H2 --nmols 50  --where anywhere   --model small-0b2
+    - name: config
+      run: uv run packmm --config examples/configs/mofs.yaml
