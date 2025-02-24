@@ -4,6 +4,7 @@
 [![Coverage Status][cov-badge]][cov-link]
 [![License][license-badge]][license-link]
 [![DOI][doi-badge]][doi-link]
+[![Docs status][docs-badge]][docs-link]
 
 # what is packmm
 
@@ -14,12 +15,15 @@ It tries to generate realistic starting configuration by employing machine learn
 interatomic potential for describing interactions between atoms and Monte Carlo,
 Molecular Dynamics and hybrid Monte Carlo.
 
+It is using [janus-core](https://github.com/stfc/janus-core) for MLIPs ([mace mp](https://github.com/ACEsuit/mace-mp) is the default) and for MD and Geometry optimisation
+routines.
+
 It provides both a cli and a python api, with some examples below.
 
 ## Quick install
 
 ```bash
-
+   python3 -m pip install pack-mm   # or
    uv pip install pack-mm
 
 ```
@@ -27,14 +31,24 @@ or install the latest
 
 ```bash
 
+  python3 -m pip install git+https://github.com/ddmms/pack-mm.git # or
   uv pip install git+https://github.com/ddmms/pack-mm.git
 
 ```
+
+## Using gpu
+
+by default runs on cpu, if you want to use gpus (recommended for big systems) pass --device cuda to cli or device="cuda" to python
+API.
 
 ## Jupyter notebook examples
 
 
 - [Basics](docs/source/tutorials/basics.ipynb) [![badge](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ddmms/pack-mm/blob/main/docs/source/tutorials/basic.ipynb)
+- [Surface](docs/source/tutorials/basics.ipynb) [![badge](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ddmms/pack-mm/blob/main/docs/source/tutorials/surface.ipynb)
+- [Water](docs/source/tutorials/basics.ipynb) [![badge](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ddmms/pack-mm/blob/main/docs/source/tutorials/water.ipynb)
+- [interstitials](docs/source/tutorials/basics.ipynb) [![badge](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ddmms/pack-mm/blob/main/docs/source/tutorials/interstitials.ipynb)
+- [Mof](docs/source/tutorials/basics.ipynb) [![badge](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ddmms/pack-mm/blob/main/docs/source/tutorials/mof.ipynb)
 
 ## CLI examples
 
@@ -241,3 +255,5 @@ after optimisation
 [license-link]: https://opensource.org/license/MIT
 [pypi-badge]: https://badge.fury.io/py/pack-mm.svg
 [pypi-link]: https://pypi.org/project/pack-mm/
+[docs-badge]: https://github.com/ddmms/pack-mm/actions/workflows/python-publish.yml/badge.svg
+[docs-link]: https://ddmms.github.io/pack-mm/
