@@ -74,6 +74,8 @@ def test_packmm_every(tmp_path):
             "2042",
             "--out-path",
             tmp_path,
+            "--threshold",
+            "0.5",
             "--no-geometry",
         ],
     )

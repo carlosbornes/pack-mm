@@ -187,6 +187,13 @@ def test_packmm_custom_fmax():
     assert "fmax=0.05" in strip_ansi_codes(result.output)
 
 
+def test_packmm_custom_threshold():
+    """Check threshold."""
+    result = runner.invoke(app, ["--threshold", "0.9"])
+    assert result.exit_code == 0
+    assert "threshold=0.9" in strip_ansi_codes(result.output)
+
+
 def test_packmm_no_geometry_optimization():
     """Check optimisation."""
     result = runner.invoke(app, ["--no-geometry"])

@@ -124,6 +124,12 @@ def packmm(
     cell_b: float = Option(20.0, help="Side of the empty box along the y-axis in Å."),
     cell_c: float = Option(20.0, help="Side of the empty box along the z-axis in Å."),
     fmax: float = Option(0.1, help="force tollerance for optimisation if needed."),
+    threshold: float = Option(
+        0.92,
+        help="""percentage of the single molecule energy above which
+                the acceptance energy difference must
+                be considered for acceptance.""",
+    ),
     geometry: bool = Option(True, help="Perform geometry optimization at the end."),
     out_path: str = Option(".", help="path to save various outputs."),
 ):
@@ -149,6 +155,7 @@ def packmm(
     print(f"{device=}")
     print(f"{temperature=}")
     print(f"{fmax=}")
+    print(f"{threshold=}")
     print(f"{geometry=}")
     print(f"{out_path=}")
     print(f"{every=}")
@@ -188,6 +195,7 @@ def packmm(
         temperature=temperature,
         ntries=ntries,
         fmax=fmax,
+        threshold=threshold,
         geometry=geometry,
         cell_a=cell_a,
         cell_b=cell_b,

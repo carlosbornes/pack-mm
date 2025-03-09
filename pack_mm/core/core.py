@@ -204,6 +204,7 @@ def pack_molecules(
     ntries: int = 50,
     geometry: bool = False,
     fmax: float = 0.1,
+    threshold: float = 0.92,
     cell_a: float = None,
     cell_b: float = None,
     cell_c: float = None,
@@ -243,6 +244,9 @@ def pack_molecules(
         md_temperature (float): Temperature in Kelvin for MD.
         md_steps (int): Number of steps for MD.
         md_timestep (float): Timestep in fs for MD.
+        fmax (float): Max force for geometry optimisation.
+        threshold (float): Percentage of the single molecule energy above which
+                           the move is to be considered for acceptance.
         insert_strategy (str): Insert strategy, "random" or "md"
         relax_strategy (str): Relax strategy, "geometry_optimisation" or "md"
 
@@ -298,6 +302,10 @@ def pack_molecules(
 
     e = sys.get_potential_energy() if len(sys) > 0 else 0.0
 
+    mol = load_molecule(molecule)
+    mol.calc = calc
+    emol = mol.get_potential_energy()
+
     csys = sys.copy()
     i = 0
     while i < nmols:
@@ -336,7 +344,7 @@ def pack_molecules(
             u = random.random()
             print(f"Old energy={e}, new energy={en}, {de=}, {acc=}, random={u}")
 
-            if u <= acc:
+            if abs(de / emol) > threshold and u <= acc:
                 accept = True
                 break
         if accept:
