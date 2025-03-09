@@ -1,6 +1,6 @@
 [project]
 name = "pack-mm"
-version = "0.1.10"
+version = "0.1.11"
 description = "packing materials and molecules in boxes using for machine learnt interatomic potentials"
 authors = [
     { name = "Alin M. Elena" },
@@ -82,7 +82,7 @@ source=["pack_mm"]
 
 [tool.ruff]
 exclude = ["conf.py", "*ipynb"]
-target-version = "0.1.10"
+target-version = "py312"
 
 [tool.ruff.lint]
 # Ignore complexity
