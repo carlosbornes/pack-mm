@@ -189,9 +189,9 @@ def pack_molecules(
     system: str | Atoms = None,
     molecule: str = "H2O",
     nmols: int = -1,
-    arch: str = "cpu",
-    model: str = "mace_mp",
-    device: str = "medium-omat-0",
+    arch: str = "mace_mp",
+    model: str = "medium-omat-0",
+    device: str = "cpu",
     where: str = "anywhere",
     center: tuple[float, float, float] = None,
     radius: float = None,
@@ -316,7 +316,7 @@ def pack_molecules(
 
             if every > 0 and _itry / every == 0:
                 tsys = save_the_day(
-                    struct_path=tsys,
+                    struct=tsys,
                     device=device,
                     arch=arch,
                     model=model,
@@ -367,13 +367,13 @@ def pack_molecules(
     # Perform final geometry optimization if requested
     if geometry:
         energy_final, csys = optimize_geometry(
-            Path(out_path) / f"{sysname}{nmols}{Path(molecule).stem}.cif",
-            device,
-            arch,
-            model,
-            fmax,
-            out_path,
-            True,
+            struct=Path(out_path) / f"{sysname}{nmols}{Path(molecule).stem}.cif",
+            device=device,
+            arch=arch,
+            model=model,
+            fmax=fmax,
+            out_path=out_path,
+            opt_cell=True,
         )
     return (energy_final, csys)
 
@@ -418,7 +418,7 @@ def rotate_molecule(mol):
 
 
 def save_the_day(
-    struct_path: str | Atoms,
+    struct: str | Atoms,
     device: str = "",
     arch: str = "",
     model: str = "",
@@ -432,7 +432,7 @@ def save_the_day(
     """Geometry optimisation or MD to get a better structure."""
     if relax_strategy == "geometry_optimisation":
         _, a = optimize_geometry(
-            struct_path,
+            struct,
             device,
             arch,
             model,
@@ -442,13 +442,13 @@ def save_the_day(
         return a
     if relax_strategy == "md":
         return run_md_nve(
-            struct_path, md_temperature, md_steps, md_timestep, arch, model, device
+            struct, md_temperature, md_steps, md_timestep, arch, model, device
         )
     return None
 
 
 def run_md_nve(
-    struct_path: str | Atoms,
+    struct: str | Atoms,
     temp: float = 100.0,
     steps: int = 10,
     timestep: float = 1.0,
@@ -457,34 +457,22 @@ def run_md_nve(
     device: str = "",
 ) -> Atoms:
     """Run nve simulation."""
-    if isinstance(struct_path, Atoms):
-        md = NVE(
-            struct=struct_path,
-            temp=temp,
-            device=device,
-            arch=arch,
-            calc_kwargs={"model_paths": model},
-            stats_every=1,
-            steps=steps,
-            timestep=timestep,
-        )
-    else:
-        md = NVE(
-            struct_path=struct_path,
-            temp=temp,
-            device=device,
-            arch=arch,
-            calc_kwargs={"model_paths": model},
-            stats_every=1,
-            steps=steps,
-            timestep=timestep,
-        )
+    md = NVE(
+        struct=struct,
+        temp=temp,
+        device=device,
+        arch=arch,
+        calc_kwargs={"model_paths": model},
+        stats_every=1,
+        steps=steps,
+        timestep=timestep,
+    )
     md.run()
     return md.struct
 
 
 def optimize_geometry(
-    struct_path: str | Atoms,
+    struct: str | Atoms,
     device: str,
     arch: str,
     model: str,
@@ -493,25 +481,15 @@ def optimize_geometry(
     opt_cell: bool = False,
 ) -> tuple(float, Atoms):
     """Optimize the geometry of a structure."""
-    if isinstance(struct_path, Atoms):
-        geo = GeomOpt(
-            struct=struct_path,
-            device=device,
-            arch=arch,
-            fmax=fmax,
-            calc_kwargs={"model_paths": model},
-            filter_kwargs={"hydrostatic_strain": opt_cell},
-        )
-        geo.run()
-    else:
-        geo = GeomOpt(
-            struct_path=struct_path,
-            device=device,
-            arch=arch,
-            fmax=fmax,
-            calc_kwargs={"model_paths": model},
-            filter_kwargs={"hydrostatic_strain": opt_cell},
-        )
-        geo.run()
-        write(Path(out_path) / f"{Path(struct_path).stem}-opt.cif", geo.struct)
+    geo = GeomOpt(
+        struct=struct,
+        device=device,
+        arch=arch,
+        fmax=fmax,
+        calc_kwargs={"model_paths": model},
+        filter_kwargs={"hydrostatic_strain": opt_cell},
+    )
+    geo.run()
+    if isinstance(struct, Path):
+        write(Path(out_path) / f"{struct.stem}-opt.cif", geo.struct)
     return (geo.struct.get_potential_energy(), geo.struct)
