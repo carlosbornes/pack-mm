@@ -5,4 +5,5 @@ nmols: 10
 centre: 10,10,10
 radius: 5.0
 geometry: False
+threshold: 0.5
 model: small-0b2
