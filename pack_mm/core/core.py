@@ -187,7 +187,7 @@ def set_defaults(
 
 def pack_molecules(
     system: str | Atoms = None,
-    molecule: str = "H2O",
+    molecule: str | Atoms = "H2O",
     nmols: int = -1,
     arch: str = "mace_mp",
     model: str = "medium-omat-0",
@@ -222,7 +222,7 @@ def pack_molecules(
     Parameters
     ----------
         system (str|Atoms): Path to the system file or name of the system.
-        molecule (str): Path to the molecule file or name of the molecule.
+        molecule (str|Atoms): Path to the molecule file or name of the molecule.
         nmols (int): Number of molecules to insert.
         arch (str): Architecture for the calculator.
         model (str): Path to the model file.
@@ -286,8 +286,13 @@ def pack_molecules(
         sys = read(system)
         sysname = Path(system).stem + "+"
 
+    if isinstance(molecule, Atoms):
+        molname = molecule.get_chemical_formula()
+    else:
+        molname = Path(molecule).stem
+        
     # Print summary
-    print(f"Inserting {nmols} {molecule} molecules in {sysname}.")
+    print(f"Inserting {nmols} {molname} molecules in {sysname}.")
     print(f"Using {arch} model {model} on {device}.")
     print(f"Insert in {where}.")
 
@@ -352,7 +357,7 @@ def pack_molecules(
             e = en
             i += 1
             print(f"Inserted particle {i}")
-            write(Path(out_path) / f"{sysname}{i}{Path(molecule).stem}.cif", csys)
+            write(Path(out_path) / f"{sysname}{i}{molname}.cif", csys)
         else:
             # Things are bad, maybe geomatry optimisation saves us
             # once you hit here is bad, this can keep looping
@@ -375,7 +380,7 @@ def pack_molecules(
     # Perform final geometry optimization if requested
     if geometry:
         energy_final, csys = optimize_geometry(
-            struct=Path(out_path) / f"{sysname}{nmols}{Path(molecule).stem}.cif",
+            struct=Path(out_path) / f"{sysname}{nmols}{molname}.cif",
             device=device,
             arch=arch,
             model=model,
@@ -388,6 +393,8 @@ def pack_molecules(
 
 def load_molecule(molecule: str):
     """Load a molecule from a file or build it."""
+    if isinstance(molecule, Atoms):
+        return molecule.copy()
     try:
         return build_molecule(molecule)
     except KeyError:
